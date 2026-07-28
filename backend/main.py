@@ -1,7 +1,8 @@
 import os
 import json
 import uvicorn
-from fastapi import FastAPI, HTTPException
+import time
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from groq import Groq
@@ -46,6 +47,37 @@ class QuizRequest(BaseModel):
     weakConcepts: list[str]
 
 
+# ── Rate Limiting ─────────────────────────────────────────────────────────────
+
+rate_limit_store = {}
+RATE_LIMIT_MAX_CALLS = 30
+RATE_LIMIT_COOLDOWN_SECONDS = 300
+
+def check_rate_limit(request: Request):
+    client_ip = request.client.host
+    now = time.time()
+    
+    user_data = rate_limit_store.get(client_ip)
+    
+    if not user_data:
+        rate_limit_store[client_ip] = {"count": 1, "window_start": now}
+        return
+        
+    if now - user_data["window_start"] > RATE_LIMIT_COOLDOWN_SECONDS:
+        user_data["count"] = 1
+        user_data["window_start"] = now
+        return
+        
+    if user_data["count"] >= RATE_LIMIT_MAX_CALLS:
+        remaining = int(RATE_LIMIT_COOLDOWN_SECONDS - (now - user_data["window_start"]))
+        raise HTTPException(
+            status_code=429, 
+            detail=f"Rate limit exceeded. Please try again in {remaining} seconds."
+        )
+        
+    user_data["count"] += 1
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @app.get("/health")
@@ -53,7 +85,7 @@ async def health_check():
     return {"status": "ok"}
 
 
-@app.post("/chat")
+@app.post("/chat", dependencies=[Depends(check_rate_limit)])
 async def chat_with_alex(request: ChatRequest):
     system_prompt = f"""
     You are a curious but slightly confused student named "Alex".
@@ -93,7 +125,7 @@ async def chat_with_alex(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/analyze")
+@app.post("/analyze", dependencies=[Depends(check_rate_limit)])
 async def analyze_explanation(request: AnalysisRequest):
     conversation_text = "\n".join(
         [f"{'Teacher' if m.get('role') == 'user' else 'Student (Alex)'}: {m.get('content', '')}"
@@ -136,7 +168,7 @@ async def analyze_explanation(request: AnalysisRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/summary")
+@app.post("/summary", dependencies=[Depends(check_rate_limit)])
 async def session_summary(request: SummaryRequest):
     conversation_text = "\n".join(
         [f"{'Teacher' if m.get('role') == 'user' else 'Student (Alex)'}: {m.get('content', '')}"
@@ -187,7 +219,7 @@ async def session_summary(request: SummaryRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/quiz")
+@app.post("/quiz", dependencies=[Depends(check_rate_limit)])
 async def generate_quiz(request: QuizRequest):
     prompt = f"""
     Create a 5-question multiple-choice quiz about "{request.topic}".
