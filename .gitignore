@@ -1,0 +1,25 @@
+# Environments
+.env
+.env.local
+backend/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+
+# Node
+node_modules/
+frontend/node_modules/
+
+# Next.js
+.next/
+out/
+build/
+frontend/.next/
+
+# Misc
+.DS_Store
+*.log
