@@ -92,15 +92,18 @@ export default function Home() {
         }),
       });
 
-      if (!res.ok) throw new Error("Backend error");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.detail || "Couldn't reach Alex. Check if the backend is running.");
+      }
 
       const data = await res.json();
       setMessages((prev) => [
         ...prev,
         { role: "ai", content: data.response },
       ]);
-    } catch {
-      setError("Couldn't reach Alex. Check if the backend is running.");
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }

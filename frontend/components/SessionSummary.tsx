@@ -117,7 +117,10 @@ export default function SessionSummary({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ topic, history }),
         });
-        if (!res.ok) throw new Error("Failed to generate summary");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.detail || "Failed to generate summary");
+        }
         const result: SummaryData = await res.json();
         setData(result);
 
@@ -147,8 +150,8 @@ export default function SessionSummary({
           setNodes(newNodes);
           setEdges(newEdges);
         }
-      } catch (err) {
-        setError("Could not generate session summary. Please try again.");
+      } catch (err: any) {
+        setError(err.message || "Could not generate session summary. Please try again.");
         console.error(err);
       } finally {
         setLoading(false);

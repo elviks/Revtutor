@@ -72,7 +72,7 @@ def check_rate_limit(request: Request):
         remaining = int(RATE_LIMIT_COOLDOWN_SECONDS - (now - user_data["window_start"]))
         raise HTTPException(
             status_code=429, 
-            detail=f"Rate limit exceeded. Please try again in {remaining} seconds."
+            detail=f"Rate limit reached. Please wait {remaining} seconds."
         )
         
     user_data["count"] += 1

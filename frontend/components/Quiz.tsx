@@ -33,11 +33,14 @@ export default function Quiz({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ topic, weakConcepts }),
         });
-        if (!res.ok) throw new Error("Failed to generate quiz");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.detail || "Failed to generate quiz");
+        }
         const data = await res.json();
         setQuestions(data.questions);
-      } catch (err) {
-        setError("Could not generate quiz. Please try again.");
+      } catch (err: any) {
+        setError(err.message || "Could not generate quiz. Please try again.");
         console.error(err);
       } finally {
         setLoading(false);
