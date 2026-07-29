@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { API_URL } from "@/lib/api";
 import {
   ReactFlow,
   MiniMap,
@@ -114,7 +115,7 @@ export default function SessionSummary({
   useEffect(() => {
     const fetchSummary = async () => {
       try {
-        const res = await fetch("http://localhost:8000/summary", {
+        const res = await fetch(`${API_URL}/summary`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ topic, history, apiKey }),

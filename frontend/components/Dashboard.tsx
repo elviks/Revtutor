@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
+import { API_URL } from "@/lib/api";
 
 interface Concept {
   name: string;
@@ -105,7 +106,7 @@ export default function Dashboard({
       const doAnalyze = async () => {
         setLoading(true);
         try {
-          const res = await fetch("http://localhost:8000/analyze", {
+          const res = await fetch(`${API_URL}/analyze`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ topic, history: messages, apiKey }),

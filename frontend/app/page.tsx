@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Dashboard from "@/components/Dashboard";
 import SessionSummary from "@/components/SessionSummary";
 import Quiz from "@/components/Quiz";
+import { API_URL } from "@/lib/api";
 
 interface Message {
   role: "user" | "ai";
@@ -82,7 +83,7 @@ export default function Home() {
         content: m.content,
       }));
 
-      const res = await fetch("http://localhost:8000/chat", {
+      const res = await fetch(`${API_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

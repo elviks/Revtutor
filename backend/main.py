@@ -13,9 +13,18 @@ load_dotenv()
 
 app = FastAPI(title="RevTutor API", version="1.0.0")
 
+allowed_origins = [
+    origin.strip().rstrip("/")
+    for origin in os.getenv(
+        "ALLOWED_ORIGINS",
+        "http://localhost:3000,https://revtutor.vercel.app",
+    ).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://revtutor.vercel.app/"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

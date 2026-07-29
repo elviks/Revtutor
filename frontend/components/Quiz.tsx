@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { API_URL } from "@/lib/api";
 
 interface Question {
   question: string;
@@ -30,7 +31,7 @@ export default function Quiz({
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const res = await fetch("http://localhost:8000/quiz", {
+        const res = await fetch(`${API_URL}/quiz`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ topic, weakConcepts, apiKey }),
