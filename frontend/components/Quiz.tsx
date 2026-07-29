@@ -11,10 +11,12 @@ interface Question {
 export default function Quiz({
   topic,
   weakConcepts,
+  apiKey,
   onComplete,
 }: {
   topic: string;
   weakConcepts: string[];
+  apiKey?: string;
   onComplete: (score: number, total: number) => void;
 }) {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -31,7 +33,7 @@ export default function Quiz({
         const res = await fetch("http://localhost:8000/quiz", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ topic, weakConcepts }),
+          body: JSON.stringify({ topic, weakConcepts, apiKey }),
         });
         if (!res.ok) {
           const errData = await res.json().catch(() => null);

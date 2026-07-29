@@ -2,6 +2,7 @@ import os
 import json
 import uvicorn
 import time
+from typing import Optional
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -30,21 +31,25 @@ class ChatRequest(BaseModel):
     topic: str
     confusionLevel: int
     history: list[dict]
+    apiKey: Optional[str] = None
 
 
 class AnalysisRequest(BaseModel):
     topic: str
     history: list[dict]
+    apiKey: Optional[str] = None
 
 
 class SummaryRequest(BaseModel):
     topic: str
     history: list[dict]
+    apiKey: Optional[str] = None
 
 
 class QuizRequest(BaseModel):
     topic: str
     weakConcepts: list[str]
+    apiKey: Optional[str] = None
 
 
 # ── Rate Limiting ─────────────────────────────────────────────────────────────
@@ -112,9 +117,11 @@ async def chat_with_alex(request: ChatRequest):
         *request.history,
         {"role": "user", "content": request.userExplanation}
     ]
+    
+    groq_client = Groq(api_key=request.apiKey) if request.apiKey else client
 
     try:
-        completion = client.chat.completions.create(
+        completion = groq_client.chat.completions.create(
             messages=messages,
             model="llama-3.3-70b-versatile",
             temperature=0.7 + (request.confusionLevel * 0.02),
@@ -151,9 +158,11 @@ async def analyze_explanation(request: AnalysisRequest):
 
     Ensure you evaluate the entire conversation to determine the status of concepts and overall misconceptions, but base jargon, analogy, and complexity specifically on the teacher's most recent input.
     """
+    
+    groq_client = Groq(api_key=request.apiKey) if request.apiKey else client
 
     try:
-        completion = client.chat.completions.create(
+        completion = groq_client.chat.completions.create(
             messages=[
                 {"role": "system",
                     "content": "You are a strict educational analyst. Output ONLY valid JSON."},
@@ -202,9 +211,11 @@ async def session_summary(request: SummaryRequest):
         - "nodes": Array of objects {{ "id": string, "label": string, "status": "mastered" | "weak" | "missing" | "mentioned" }}
         - "edges": Array of objects {{ "source": string, "target": string, "label": string (optional) }}
     """
+    
+    groq_client = Groq(api_key=request.apiKey) if request.apiKey else client
 
     try:
-        completion = client.chat.completions.create(
+        completion = groq_client.chat.completions.create(
             messages=[
                 {"role": "system",
                     "content": "You are a strict educational evaluator. Output ONLY valid JSON."},
@@ -232,9 +243,11 @@ async def generate_quiz(request: QuizRequest):
     - "correctAnswerIndex": Integer (0-3) indicating the correct option.
     - "explanation": A 1-2 sentence explanation of WHY this answer is correct.
     """
+    
+    groq_client = Groq(api_key=request.apiKey) if request.apiKey else client
 
     try:
-        completion = client.chat.completions.create(
+        completion = groq_client.chat.completions.create(
             messages=[
                 {"role": "system",
                     "content": "You are an expert quiz generator. Output ONLY valid JSON."},

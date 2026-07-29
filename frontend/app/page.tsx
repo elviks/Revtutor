@@ -35,6 +35,7 @@ export default function Home() {
   // State for quiz integration
   const [weakConcepts, setWeakConcepts] = useState<string[]>([]);
   const [quizScore, setQuizScore] = useState<{ score: number; total: number } | undefined>();
+  const [apiKey, setApiKey] = useState("");
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -89,6 +90,7 @@ export default function Home() {
           topic,
           confusionLevel,
           history,
+          apiKey: apiKey || undefined,
         }),
       });
 
@@ -202,6 +204,17 @@ export default function Home() {
                 </svg>
               </button>
             </div>
+            
+            {/* Optional API Key Input */}
+            <div className="relative max-w-sm mx-auto mt-4">
+              <input
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="Optional: Enter your Groq API Key"
+                className="w-full p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-blue)] transition-all duration-300 text-center"
+              />
+            </div>
           </div>
 
           {/* Suggested Topics */}
@@ -260,6 +273,7 @@ export default function Home() {
             topic={topic}
             history={apiHistory}
             quizScore={quizScore}
+            apiKey={apiKey || undefined}
             onRestart={restartSession}
             onTakeQuiz={handleTakeQuiz}
           />
@@ -278,6 +292,7 @@ export default function Home() {
           <Quiz
             topic={topic}
             weakConcepts={weakConcepts}
+            apiKey={apiKey || undefined}
             onComplete={handleQuizComplete}
           />
         </div>
@@ -438,7 +453,7 @@ export default function Home() {
 
           {/* Dashboard Sidebar */}
           <div className="hidden lg:block overflow-y-auto custom-scrollbar p-4">
-            <Dashboard topic={topic} messages={apiHistory} />
+            <Dashboard topic={topic} messages={apiHistory} apiKey={apiKey || undefined} />
           </div>
         </div>
       </div>

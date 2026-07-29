@@ -93,12 +93,14 @@ export default function SessionSummary({
   topic,
   history,
   quizScore,
+  apiKey,
   onRestart,
   onTakeQuiz,
 }: {
   topic: string;
   history: { role: string; content: string }[];
   quizScore?: { score: number; total: number };
+  apiKey?: string;
   onRestart: () => void;
   onTakeQuiz: (weakConcepts: string[]) => void;
 }) {
@@ -115,7 +117,7 @@ export default function SessionSummary({
         const res = await fetch("http://localhost:8000/summary", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ topic, history }),
+          body: JSON.stringify({ topic, history, apiKey }),
         });
         if (!res.ok) {
           const errData = await res.json().catch(() => null);

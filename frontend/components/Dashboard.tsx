@@ -77,9 +77,11 @@ function MiniTrend({ values, color }: { values: number[]; color: string }) {
 export default function Dashboard({
   messages,
   topic,
+  apiKey,
 }: {
   messages: { role: string; content: string }[];
   topic: string;
+  apiKey?: string;
 }) {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [loading, setLoading] = useState(false);
@@ -106,7 +108,7 @@ export default function Dashboard({
           const res = await fetch("http://localhost:8000/analyze", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ topic, history: messages }),
+            body: JSON.stringify({ topic, history: messages, apiKey }),
             signal: controller.signal,
           });
           const data: Metrics = await res.json();
